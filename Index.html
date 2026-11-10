@@ -481,6 +481,34 @@ drawPoliticians();
 drawPixelPortrait(document.getElementById("portrait"));
 drawMenuArt(document.getElementById("menuArt"));
 </script>
+<div class="card">
+<b>MAPPA POLITICA USA</b>
+<div id="politicalMap" style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px"></div>
+<p class="small">Blu = Democratici, Rosso = Repubblicani</p>
+</div>
 
+<div class="card">
+<b>PROCESSO LEGISLATIVO</b>
+<p class="small">Commissione → Camera → Senato → Conferenza → Presidente → Veto/Override</p>
+<button onclick="startLegislativeProcess()">AVVIA PROCESSO</button>
+<div id="legislativeSteps"></div>
+</div>
+
+<div class="card">
+<b>CAMERA DEI RAPPRESENTANTI</b>
+<div id="houseChamber" style="display:grid;grid-template-columns:repeat(20,1fr);gap:2px"></div>
+</div>
+
+<div class="card">
+<b>SENATO</b>
+<div id="senateChamber" style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px"></div>
+</div>
+
+<div class="card">
+<b>PROCESSO ELETTORALE</b>
+<p class="small">Primarie → Convenzioni → Campagna → Dibattiti → Voto popolare → College elettorale</p>
+<button onclick="startElectionProcess()">AVVIA PROCESSO ELETTORALE</button>
+<div id="electionSteps"></div>
+</div>
 </body>
   </html>
