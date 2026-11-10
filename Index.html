@@ -5,508 +5,482 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>USA Power & Policy</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0b1220;
-  color: #fff;
-  margin: 0;
-  padding: 16px;
-}
-h1 {
-  color: #4da3ff;
-  text-align: center;
-}
-.card {
-  background: #16233b;
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-button {
-  background: #1f6feb;
-  color: white;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 8px;
-  font-size: 16px;
-  margin: 4px;
-}
-button:active {
-  background: #0d4da3;
-}
-#log {
-  background: #101a2c;
-  height: 180px;
-  overflow-y: auto;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Courier New",monospace;background:#0a0f1a;color:#e6edf3}
+.screen{display:none;padding:14px}
+.screen.active{display:block}
+h1,h2{color:#58a6ff;text-align:center;text-shadow:2px 2px 0 #000}
+.card{background:#141d2b;border:3px solid #2b3a55;padding:12px;margin-bottom:12px;box-shadow:4px 4px 0 #000}
+button{width:100%;background:#238636;color:#fff;border:3px solid #0f2b17;padding:12px;font-family:"Courier New",monospace;font-size:15px;margin-top:8px;box-shadow:3px 3px 0 #000}
+button:active{background:#1a5f28;transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+input,select{width:100%;padding:10px;background:#0d1420;color:#e6edf3;border:3px solid #2b3a55;font-family:"Courier New",monospace;font-size:15px;margin-top:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#0d1420;border:2px solid #2b3a55;padding:8px}
+.stat b{display:block;font-size:11px;color:#8b949e}
+.stat span{font-size:16px;font-weight:bold;color:#58a6ff}
+#map{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.state{background:#22314f;border:2px solid #000;padding:6px 2px;text-align:center;font-size:10px}
+.state.dem{background:#1f6feb}
+.state.rep{background:#d1242f}
+#log{background:#0d1420;border:3px solid #2b3a55;height:180px;overflow-y:auto;padding:8px;font-size:12px}
+#portrait{width:96px;height:96px;image-rendering:pixelated;border:3px solid #2b3a55;background:#000}
+.small{font-size:11px;color:#8b949e}
 </style>
 </head>
 <body>
 
-<h1>USA POWER & POLICY</h1>
-
-<div class="card">
-  <b>Presidente:</b> Joe Biden<br>
-  <b>Data:</b> <span id="date"></span><br>
-  <b>Velocità:</b> <span id="speed"></span>
-</div>
-
-<div class="card">
-  <b>Approvazione:</b> <span id="approval"></span><br>
-  <b>PIL:</b> <span id="gdp"></span> miliardi<br>
-  <b>Inflazione:</b> <span id="inflation"></span>%<br>
-  <b>Disoccupazione:</b> <span id="unemployment"></span>%<br>
-  <b>Debito:</b> <span id="debt"></span> miliardi
-</div>
-
-<div class="card">
-  <button onclick="startGame()">START</button>
-  <button onclick="pauseGame()">PAUSA</button>
-  <button onclick="setSpeed(1)">1x</button>
-  <button onclick="setSpeed(2)">2x</button>
-  <button onclick="setSpeed(5)">5x</button>
-  <button onclick="setSpeed(10)">10x</button>
-</div>
-
-<div class="card">
-  <b>Eventi</b>
-  <div id="log"></div>
-</div>
-
-<script>
-let date = new Date(2024, 0, 1);
-let approval = 40;
-let gdp = 27000;
-let inflation = 3.4;
-let unemployment = 3.7;
-let debt = 34000;
-let speed = 1;
-let running = false;
-let timer = null;
-
-function updateScreen() {
-  document.getElementById("date").innerText =
-    date.toLocaleDateString("it-IT");
-
-  document.getElementById("speed").innerText = speed + "x";
-  document.getElementById("approval").innerText = approval.toFixed(1) + "%";
-  document.getElementById("gdp").innerText = gdp.toFixed(0);
-  document.getElementById("inflation").innerText = inflation.toFixed(1);
-  document.getElementById("unemployment").innerText = unemployment.toFixed(1);
-  document.getElementById("debt").innerText = debt.toFixed(0);
-}
-
-function addEvent(text) {
-  const log = document.getElementById("log");
-  const p = document.createElement("p");
-  p.innerText = text;
-  log.prepend(p);
-}
-
-function advanceDay() {
-  date.setDate(date.getDate() + 1);
-
-  const economicPressure =
-    (inflation - 2) * 0.4 +
-    (unemployment - 4) * 0.8 -
-    2.1 * 0.5;
-
-  approval -= economicPressure * 0.05;
-
-  if (approval < 15) approval = 15;
-  if (approval > 75) approval = 75;
-
-  gdp += gdp * (2.1 / 100 / 365);
-  debt += 1700 / 365;
-
-  inflation += (Math.random() - 0.5) * 0.02;
-  unemployment += (Math.random() - 0.5) * 0.03;
-
-  if (inflation < 0.5) inflation = 0.5;
-  if (inflation > 9) inflation = 9;
-
-  if (unemployment < 2) unemployment = 2;
-  if (unemployment > 12) unemployment = 12;
-
-  if (Math.random() < 0.02) {
-    const events = [
-      "Crisi internazionale in Ucraina.",
-      "Nuovo dibattito al Congresso.",
-      "Aumento dei prezzi dell'energia.",
-      "Sciopero nei trasporti.",
-      "Nuovo sondaggio favorevole al Presidente.",
-      "Tensioni con la Cina.",
-      "Attacco informatico a infrastrutture federali.",
-      "Disastro naturale in uno Stato."
-    ];
-    addEvent(events[Math.floor(Math.random() * events.length)]);
-  }
-
-  updateScreen();
-}
-
-function startGame() {
-  if (running) return;
-  running = true;
-  timer = setInterval(advanceDay, 1000 / speed);
-  addEvent("Simulazione avviata.");
-}
-
-function pauseGame() {
-  running = false;
-  clearInterval(timer);
-  addEvent("Simulazione in pausa.");
-}
-
-function setSpeed(newSpeed) {
-  speed = newSpeed;
-  if (running) {
-    clearInterval(timer);
-    timer = setInterval(advanceDay, 1000 / speed);
-  }
-  updateScreen();
-}
-
-updateScreen();
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>USA Power & Policy</title>
-<style>
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(160deg, #0b1220, #101a2c);
-  color: #e6edf3;
-  min-height: 100vh;
-}
-.screen {
-  display: none;
-  padding: 20px;
-}
-.screen.active {
-  display: block;
-}
-h1 {
-  text-align: center;
-  color: #4da3ff;
-  margin-bottom: 30px;
-}
-h2 {
-  color: #4da3ff;
-}
-.card {
-  background: #16233b;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-button {
-  width: 100%;
-  background: #1f6feb;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 17px;
-  margin-top: 10px;
-}
-button:active {
-  background: #0d4da3;
-}
-input, select {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  margin-top: 8px;
-  font-size: 16px;
-}
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.stat {
-  background: #101a2c;
-  padding: 12px;
-  border-radius: 10px;
-}
-.stat b {
-  display: block;
-  font-size: 12px;
-  color: #8b949e;
-}
-.stat span {
-  font-size: 18px;
-  font-weight: bold;
-}
-#log {
-  background: #101a2c;
-  height: 160px;
-  overflow-y: auto;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 14px;
-}
-</style>
-</head>
-<body>
-
-<!-- SCHERMATA PRINCIPALE -->
 <div id="menu" class="screen active">
-  <h1>USA POWER & POLICY</h1>
-
-  <div class="card">
-    <button onclick="showScreen('create')">NUOVA PARTITA</button>
-    <button onclick="loadGame()">CARICA PARTITA</button>
-  </div>
+<h1>USA POWER & POLICY</h1>
+<div class="card">
+<canvas id="menuArt" width="96" height="96"></canvas>
+<button onclick="show('create')">NUOVA PARTITA</button>
+<button onclick="loadGame()">CARICA PARTITA</button>
+</div>
 </div>
 
-<!-- CREAZIONE PERSONAGGIO -->
 <div id="create" class="screen">
-  <h2>Crea il tuo personaggio</h2>
-
-  <div class="card">
-    <label>Nome</label>
-    <input id="playerName" placeholder="Inserisci il tuo nome">
-
-    <label>Ruolo</label>
-    <select id="playerRole">
-      <option value="Presidente">Presidente</option>
-      <option value="Senatore">Senatore</option>
-    </select>
-
-    <label>Partito</label>
-    <select id="playerParty">
-      <option value="Democratico">Democratico</option>
-      <option value="Repubblicano">Repubblicano</option>
-      <option value="Indipendente">Indipendente</option>
-    </select>
-
-    <button onclick="startNewGame()">INIZIA</button>
-  </div>
+<h2>CREA IL TUO PERSONAGGIO</h2>
+<div class="card">
+<canvas id="portrait" width="24" height="24"></canvas>
+<label>NOME</label>
+<input id="pName" placeholder="Nome">
+<label>RUOLO</label>
+<select id="pRole">
+<option>Presidente</option>
+<option>Senatore</option>
+</select>
+<label>PARTITO</label>
+<select id="pParty">
+<option>Democratico</option>
+<option>Repubblicano</option>
+<option>Indipendente</option>
+</select>
+<label>STATO</label>
+<select id="pState"></select>
+<button onclick="newGame()">INIZIA</button>
+<button onclick="show('menu')">INDIETRO</button>
+</div>
 </div>
 
-<!-- GIOCO -->
 <div id="game" class="screen">
-  <h2>Dashboard</h2>
+<h2>DASHBOARD</h2>
+<div class="card">
+<b>NOME:</b> <span id="uName"></span><br>
+<b>RUOLO:</b> <span id="uRole"></span><br>
+<b>PARTITO:</b> <span id="uParty"></span><br>
+<b>STATO:</b> <span id="uState"></span><br>
+<b>DATA:</b> <span id="uDate"></span>
+</div>
 
-  <div class="card">
-    <b>Personaggio:</b> <span id="pName"></span><br>
-    <b>Ruolo:</b> <span id="pRole"></span><br>
-    <b>Partito:</b> <span id="pParty"></span><br>
-    <b>Data:</b> <span id="date"></span>
-  </div>
+<div class="card stats">
+<div class="stat"><b>APPROVAZIONE</b><span id="sApproval"></span></div>
+<div class="stat"><b>PIL</b><span id="sGdp"></span></div>
+<div class="stat"><b>INFLAZIONE</b><span id="sInflation"></span></div>
+<div class="stat"><b>DISOCCUPAZIONE</b><span id="sUnemployment"></span></div>
+<div class="stat"><b>DEBITO</b><span id="sDebt"></span></div>
+<div class="stat"><b>VELOCITÀ</b><span id="sSpeed"></span></div>
+</div>
 
-  <div class="card stats">
-    <div class="stat"><b>Approvazione</b><span id="approval"></span></div>
-    <div class="stat"><b>PIL</b><span id="gdp"></span></div>
-    <div class="stat"><b>Inflazione</b><span id="inflation"></span></div>
-    <div class="stat"><b>Disoccupazione</b><span id="unemployment"></span></div>
-    <div class="stat"><b>Debito</b><span id="debt"></span></div>
-    <div class="stat"><b>Velocità</b><span id="speed"></span></div>
-  </div>
+<div class="card">
+<button onclick="startGame()">START</button>
+<button onclick="pauseGame()">PAUSA</button>
+<button onclick="setSpeed(1)">1x</button>
+<button onclick="setSpeed(2)">2x</button>
+<button onclick="setSpeed(5)">5x</button>
+<button onclick="setSpeed(10)">10x</button>
+<button onclick="saveGame()">SALVA</button>
+<button onclick="show('menu')">MENU</button>
+</div>
 
-  <div class="card">
-    <button onclick="startGame()">START</button>
-    <button onclick="pauseGame()">PAUSA</button>
-    <button onclick="setSpeed(1)">1x</button>
-    <button onclick="setSpeed(2)">2x</button>
-    <button onclick="setSpeed(5)">5x</button>
-    <button onclick="setSpeed(10)">10x</button>
-    <button onclick="saveGame()">SALVA</button>
-    <button onclick="backToMenu()">MENU</button>
-  </div>
+<div class="card">
+<b>ELEZIONI 2024</b>
+<p class="small">TRUMP VS HARRIS</p>
+<button onclick="runElection()">SIMULA ELEZIONI</button>
+<button onclick="campaign()">CAMPAGNA</button>
+<button onclick="debate()">DIBATTITO</button>
+<button onclick="fundraise()">RACCOLTA FONDI</button>
+<p id="electionResult"></p>
+</div>
 
-  <div class="card">
-    <b>Eventi</b>
-    <div id="log"></div>
-  </div>
+<div class="card">
+<b>MAPPA USA</b>
+<div id="map"></div>
+</div>
+
+<div class="card">
+<b>CONGRESSO</b>
+<button onclick="proposeLaw()">PROPONI LEGGE</button>
+<button onclick="filibuster()">FILIBUSTER</button>
+<button onclick="cloture()">CLOTURE</button>
+<button onclick="committee()">COMMITTEE</button>
+<p id="lawResult"></p>
+</div>
+
+<div class="card">
+<b>MEDIA</b>
+<button onclick="mediaAction()">INTERVISTA</button>
+<button onclick="pressConference()">CONFERENZA STAMPA</button>
+<button onclick="scandal()">SCANDALO</button>
+<p id="mediaResult"></p>
+</div>
+
+<div class="card">
+<b>GEOPOLITICA</b>
+<button onclick="worldEvent()">CRISI INTERNAZIONALE</button>
+<button onclick="war()">GUERRA</button>
+<button onclick="sanctions()">SANZIONI</button>
+<button onclick="alliance()">ALLEANZA</button>
+<p id="worldResult"></p>
+</div>
+
+<div class="card">
+<b>PERSONAGGI POLITICI</b>
+<div id="politicians"></div>
+</div>
+
+<div class="card">
+<b>EVENTI</b>
+<div id="log"></div>
+</div>
 </div>
 
 <script>
-let game = null;
-let timer = null;
+let game=null;
+let timer=null;
 
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => {
-    s.classList.remove("active");
-  });
-  document.getElementById(id).classList.add("active");
+const states=[
+["AL","R"],["AK","R"],["AZ","D"],["AR","R"],["CA","D"],
+["CO","D"],["CT","D"],["DE","D"],["FL","R"],["GA","D"],
+["HI","D"],["ID","R"],["IL","D"],["IN","R"],["IA","R"],
+["KS","R"],["KY","R"],["LA","R"],["ME","D"],["MD","D"],
+["MA","D"],["MI","D"],["MN","D"],["MS","R"],["MO","R"],
+["MT","R"],["NE","R"],["NV","D"],["NH","D"],["NJ","D"],
+["NM","D"],["NY","D"],["NC","R"],["ND","R"],["OH","R"],
+["OK","R"],["OR","D"],["PA","D"],["RI","D"],["SC","R"],
+["SD","R"],["TN","R"],["TX","R"],["UT","R"],["VT","D"],
+["VA","D"],["WA","D"],["WV","R"],["WI","D"],["WY","R"]
+];
+
+const politicians=[
+["Joe Biden","Democratico","Presidente"],
+["Donald Trump","Repubblicano","Ex Presidente"],
+["Kamala Harris","Democratico","Vicepresidente"],
+["Mike Johnson","Repubblicano","Speaker"],
+["Chuck Schumer","Democratico","Leader Senato"],
+["Mitch McConnell","Repubblicano","Leader Senato"],
+["Nancy Pelosi","Democratico","Ex Speaker"],
+["Kevin McCarthy","Repubblicano","Ex Speaker"],
+["Ron DeSantis","Repubblicano","Governatore"],
+["Gavin Newsom","Democratico","Governatore"],
+["Bernie Sanders","Indipendente","Senatore"],
+["Ted Cruz","Repubblicano","Senatore"],
+["Elizabeth Warren","Democratica","Senatrice"],
+["Marco Rubio","Repubblicano","Senatore"],
+["Alexandria Ocasio-Cortez","Democratica","Rappresentante"],
+["Marjorie Taylor Greene","Repubblicana","Rappresentante"]
+];
+
+function show(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
-function startNewGame() {
-  const name = document.getElementById("playerName").value || "Giocatore";
-  const role = document.getElementById("playerRole").value;
-  const party = document.getElementById("playerParty").value;
-
-  game = {
-    name: name,
-    role: role,
-    party: party,
-    date: new Date(2024, 0, 1),
-    approval: 40,
-    gdp: 27000,
-    inflation: 3.4,
-    unemployment: 3.7,
-    debt: 34000,
-    speed: 1,
-    running: false,
-    log: []
-  };
-
-  addEvent("Nuova partita iniziata.");
-  updateScreen();
-  showScreen("game");
+function fillStates(){
+const select=document.getElementById("pState");
+states.forEach(s=>{
+const option=document.createElement("option");
+option.value=s[0];
+option.innerText=s[0];
+select.appendChild(option);
+});
 }
 
-function loadGame() {
-  const data = localStorage.getItem("usaPowerPolicySave");
-
-  if (!data) {
-    alert("Nessuna partita salvata.");
-    return;
-  }
-
-  game = JSON.parse(data);
-  game.date = new Date(game.date);
-  game.running = false;
-
-  updateScreen();
-  showScreen("game");
-  addEvent("Partita caricata.");
+function drawPixelPortrait(canvas){
+const ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,24,24);
+ctx.fillStyle="#111";
+ctx.fillRect(0,0,24,24);
+ctx.fillStyle="#f1c27d";
+ctx.fillRect(8,6,8,8);
+ctx.fillStyle="#000";
+ctx.fillRect(9,8,2,2);
+ctx.fillRect(13,8,2,2);
+ctx.fillStyle="#c0392b";
+ctx.fillRect(8,15,8,6);
+ctx.fillStyle="#2c3e50";
+ctx.fillRect(7,4,10,3);
 }
 
-function saveGame() {
-  localStorage.setItem("usaPowerPolicySave", JSON.stringify(game));
-  addEvent("Partita salvata.");
+function drawMenuArt(canvas){
+const ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,96,96);
+ctx.fillStyle="#0a0f1a";
+ctx.fillRect(0,0,96,96);
+ctx.fillStyle="#1f6feb";
+ctx.fillRect(10,20,20,50);
+ctx.fillStyle="#d1242f";
+ctx.fillRect(66,20,20,50);
+ctx.fillStyle="#fff";
+ctx.fillRect(30,40,36,16);
+ctx.fillStyle="#000";
+ctx.fillRect(38,44,20,8);
 }
 
-function backToMenu() {
-  pauseGame();
-  showScreen("menu");
+function newGame(){
+const name=document.getElementById("pName").value||"Giocatore";
+const role=document.getElementById("pRole").value;
+const party=document.getElementById("pParty").value;
+const state=document.getElementById("pState").value;
+
+game={
+name,role,party,state,
+date:new Date(2024,0,1),
+approval:40,gdp:27000,inflation:3.4,
+unemployment:3.7,debt:34000,
+speed:1,running:false,log:[]
+};
+
+addEvent("Nuova partita iniziata.");
+updateScreen();
+show("game");
 }
 
-function addEvent(text) {
-  if (!game) return;
-  game.log.unshift(text);
-  if (game.log.length > 50) game.log.pop();
-  updateScreen();
+function loadGame(){
+const data=localStorage.getItem("usaPowerPolicySave");
+if(!data){alert("Nessuna partita salvata.");return;}
+game=JSON.parse(data);
+game.date=new Date(game.date);
+game.running=false;
+updateScreen();
+show("game");
+addEvent("Partita caricata.");
 }
 
-function updateScreen() {
-  if (!game) return;
-
-  document.getElementById("pName").innerText = game.name;
-  document.getElementById("pRole").innerText = game.role;
-  document.getElementById("pParty").innerText = game.party;
-  document.getElementById("date").innerText =
-    game.date.toLocaleDateString("it-IT");
-
-  document.getElementById("approval").innerText =
-    game.approval.toFixed(1) + "%";
-
-  document.getElementById("gdp").innerText =
-    game.gdp.toFixed(0) + " mld";
-
-  document.getElementById("inflation").innerText =
-    game.inflation.toFixed(1) + "%";
-
-  document.getElementById("unemployment").innerText =
-    game.unemployment.toFixed(1) + "%";
-
-  document.getElementById("debt").innerText =
-    game.debt.toFixed(0) + " mld";
-
-  document.getElementById("speed").innerText =
-    game.speed + "x";
-
-  document.getElementById("log").innerHTML =
-    game.log.map(e => "<p>" + e + "</p>").join("");
+function saveGame(){
+localStorage.setItem("usaPowerPolicySave",JSON.stringify(game));
+addEvent("Partita salvata.");
 }
 
-function advanceDay() {
-  game.date.setDate(game.date.getDate() + 1);
-
-  const pressure =
-    (game.inflation - 2) * 0.4 +
-    (game.unemployment - 4) * 0.8 -
-    2.1 * 0.5;
-
-  game.approval -= pressure * 0.05;
-
-  if (game.approval < 15) game.approval = 15;
-  if (game.approval > 75) game.approval = 75;
-
-  game.gdp += game.gdp * (2.1 / 100 / 365);
-  game.debt += 1700 / 365;
-
-  game.inflation += (Math.random() - 0.5) * 0.02;
-  game.unemployment += (Math.random() - 0.5) * 0.03;
-
-  if (game.inflation < 0.5) game.inflation = 0.5;
-  if (game.inflation > 9) game.inflation = 9;
-
-  if (game.unemployment < 2) game.unemployment = 2;
-  if (game.unemployment > 12) game.unemployment = 12;
-
-  if (Math.random() < 0.03) {
-    const events = [
-      "Crisi internazionale in Ucraina.",
-      "Tensioni con la Cina.",
-      "Sciopero nei trasporti.",
-      "Aumento dei prezzi dell'energia.",
-      "Nuovo dibattito al Congresso.",
-      "Disastro naturale in uno Stato.",
-      "Attacco informatico a infrastrutture federali.",
-      "Nuovo sondaggio favorevole al Presidente."
-    ];
-    addEvent(events[Math.floor(Math.random() * events.length)]);
-  }
-
-  updateScreen();
+function addEvent(text){
+if(!game)return;
+game.log.unshift(text);
+if(game.log.length>50)game.log.pop();
+updateScreen();
 }
 
-function startGame() {
-  if (!game || game.running) return;
-  game.running = true;
-  timer = setInterval(advanceDay, 1000 / game.speed);
-  addEvent("Simulazione avviata.");
+function updateScreen(){
+if(!game)return;
+document.getElementById("uName").innerText=game.name;
+document.getElementById("uRole").innerText=game.role;
+document.getElementById("uParty").innerText=game.party;
+document.getElementById("uState").innerText=game.state;
+document.getElementById("uDate").innerText=game.date.toLocaleDateString("it-IT");
+document.getElementById("sApproval").innerText=game.approval.toFixed(1)+"%";
+document.getElementById("sGdp").innerText=game.gdp.toFixed(0)+" mld";
+document.getElementById("sInflation").innerText=game.inflation.toFixed(1)+"%";
+document.getElementById("sUnemployment").innerText=game.unemployment.toFixed(1)+"%";
+document.getElementById("sDebt").innerText=game.debt.toFixed(0)+" mld";
+document.getElementById("sSpeed").innerText=game.speed+"x";
+document.getElementById("log").innerHTML=game.log.map(e=>"<p>"+e+"</p>").join("");
 }
 
-function pauseGame() {
-  if (!game) return;
-  game.running = false;
-  clearInterval(timer);
-  addEvent("Simulazione in pausa.");
+function drawPoliticians(){
+const box=document.getElementById("politicians");
+box.innerHTML="";
+politicians.forEach(p=>{
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML="<b>"+p[0]+"</b><br><span class='small'>"+p[1]+" - "+p[2]+"</span>";
+box.appendChild(div);
+});
 }
 
-function setSpeed(newSpeed) {
-  if (!game) return;
-  game.speed = newSpeed;
-
-  if (game.running) {
-    clearInterval(timer);
-    timer = setInterval(advanceDay, 1000 / game.speed);
-  }
-
-  updateScreen();
+function drawMap(){
+const map=document.getElementById("map");
+map.innerHTML="";
+states.forEach(s=>{
+const div=document.createElement("div");
+div.className="state "+(s[1]==="D"?"dem":"rep");
+div.innerText=s[0];
+map.appendChild(div);
+});
 }
+
+function runElection(){
+const trump=240+Math.floor(Math.random()*60);
+const harris=538-trump;
+let result;
+if(trump>=270)result="TRUMP VINCE CON "+trump+" GRANDI ELETTORI.";
+else result="HARRIS VINCE CON "+harris+" GRANDI ELETTORI.";
+document.getElementById("electionResult").innerText=result;
+addEvent("Elezioni 2024: "+result);
+}
+
+function campaign(){
+game.approval+=Math.random()*3;
+if(game.approval>75)game.approval=75;
+addEvent("Campagna elettorale riuscita.");
+updateScreen();
+}
+
+function debate(){
+game.approval+=Math.random()*4;
+if(game.approval>75)game.approval=75;
+addEvent("Dibattito riuscito.");
+updateScreen();
+}
+
+function fundraise(){
+game.approval+=Math.random()*2;
+if(game.approval>75)game.approval=75;
+addEvent("Raccolta fondi riuscita.");
+updateScreen();
+}
+
+function proposeLaw(){
+const chance=Math.random();
+if(chance>0.5){
+document.getElementById("lawResult").innerText="LEGGE APPROVATA.";
+addEvent("Legge approvata.");
+}else{
+document.getElementById("lawResult").innerText="LEGGE RESPINTA.";
+addEvent("Legge respinta.");
+}
+}
+
+function filibuster(){
+document.getElementById("lawResult").innerText="FILIBUSTER AVVIATO.";
+addEvent("Filibuster avviato.");
+}
+
+function cloture(){
+document.getElementById("lawResult").innerText="CLOTURE TENTATA.";
+addEvent("Cloture tentata.");
+}
+
+function committee(){
+document.getElementById("lawResult").innerText="COMMITTEE AVVIATO.";
+addEvent("Committee avviato.");
+}
+
+function mediaAction(){
+const gain=Math.random()*5;
+game.approval+=gain;
+if(game.approval>75)game.approval=75;
+document.getElementById("mediaResult").innerText="INTERVISTA RIUSCITA. +"+gain.toFixed(1)+"%";
+addEvent("Intervista riuscita.");
+updateScreen();
+}
+
+function pressConference(){
+const gain=Math.random()*3;
+game.approval+=gain;
+if(game.approval>75)game.approval=75;
+document.getElementById("mediaResult").innerText="CONFERENZA STAMPA RIUSCITA. +"+gain.toFixed(1)+"%";
+addEvent("Conferenza stampa riuscita.");
+updateScreen();
+}
+
+function scandal(){
+const loss=Math.random()*5;
+game.approval-=loss;
+if(game.approval<15)game.approval=15;
+document.getElementById("mediaResult").innerText="SCANDALO. -"+loss.toFixed(1)+"%";
+addEvent("Scandalo mediatico.");
+updateScreen();
+}
+
+function worldEvent(){
+const events=[
+"CRISI IN UCRAINA.",
+"TENSIONI CON LA CINA.",
+"CRISI IN MEDIO ORIENTE.",
+"SANZIONI INTERNAZIONALI.",
+"NUOVO ACCORDO COMMERCIALE.",
+"ATTACCO INFORMATICO INTERNAZIONALE.",
+"CRISI ENERGETICA.",
+"NUOVA ALLEANZA MILITARE."
+];
+const text=events[Math.floor(Math.random()*events.length)];
+document.getElementById("worldResult").innerText=text;
+addEvent(text);
+}
+
+function war(){
+document.getElementById("worldResult").innerText="GUERRA INIZIATA.";
+addEvent("Guerra iniziata.");
+}
+
+function sanctions(){
+document.getElementById("worldResult").innerText="SANZIONI APPLICATE.";
+addEvent("Sanzioni applicate.");
+}
+
+function alliance(){
+document.getElementById("worldResult").innerText="ALLEANZA FORMATA.";
+addEvent("Alleanza formata.");
+}
+
+function advanceDay(){
+game.date.setDate(game.date.getDate()+1);
+const pressure=(game.inflation-2)*0.4+(game.unemployment-4)*0.8-2.1*0.5;
+game.approval-=pressure*0.05;
+if(game.approval<15)game.approval=15;
+if(game.approval>75)game.approval=75;
+game.gdp+=game.gdp*(2.1/100/365);
+game.debt+=1700/365;
+game.inflation+=(Math.random()-0.5)*0.02;
+game.unemployment+=(Math.random()-0.5)*0.03;
+if(game.inflation<0.5)game.inflation=0.5;
+if(game.inflation>9)game.inflation=9;
+if(game.unemployment<2)game.unemployment=2;
+if(game.unemployment>12)game.unemployment=12;
+if(Math.random()<0.03){
+const events=[
+"CRISI INTERNAZIONALE IN UCRAINA.",
+"TENSIONI CON LA CINA.",
+"SCIOPERO NEI TRASPORTI.",
+"AUMENTO DEI PREZZI DELL'ENERGIA.",
+"NUOVO DIBATTITO AL CONGRESSO.",
+"DISASTRO NATURALE IN UNO STATO.",
+"ATTACCO INFORMATICO A INFRASTRUTTURE FEDERALI.",
+"NUOVO SONDAGGIO FAVOREVOLE AL PRESIDENTE."
+];
+addEvent(events[Math.floor(Math.random()*events.length)]);
+}
+updateScreen();
+}
+
+function startGame(){
+if(!game||game.running)return;
+game.running=true;
+timer=setInterval(advanceDay,1000/game.speed);
+addEvent("Simulazione avviata.");
+}
+
+function pauseGame(){
+if(!game)return;
+game.running=false;
+clearInterval(timer);
+addEvent("Simulazione in pausa.");
+}
+
+function setSpeed(n){
+if(!game)return;
+game.speed=n;
+if(game.running){
+clearInterval(timer);
+timer=setInterval(advanceDay,1000/game.speed);
+}
+updateScreen();
+}
+
+fillStates();
+drawMap();
+drawPoliticians();
+drawPixelPortrait(document.getElementById("portrait"));
+drawMenuArt(document.getElementById("menuArt"));
 </script>
 
 </body>
-</html>
+  </html>
