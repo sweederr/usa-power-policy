@@ -175,3 +175,338 @@ updateScreen();
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USA Power & Policy</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(160deg, #0b1220, #101a2c);
+  color: #e6edf3;
+  min-height: 100vh;
+}
+.screen {
+  display: none;
+  padding: 20px;
+}
+.screen.active {
+  display: block;
+}
+h1 {
+  text-align: center;
+  color: #4da3ff;
+  margin-bottom: 30px;
+}
+h2 {
+  color: #4da3ff;
+}
+.card {
+  background: #16233b;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+button {
+  width: 100%;
+  background: #1f6feb;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 17px;
+  margin-top: 10px;
+}
+button:active {
+  background: #0d4da3;
+}
+input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 8px;
+  font-size: 16px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat {
+  background: #101a2c;
+  padding: 12px;
+  border-radius: 10px;
+}
+.stat b {
+  display: block;
+  font-size: 12px;
+  color: #8b949e;
+}
+.stat span {
+  font-size: 18px;
+  font-weight: bold;
+}
+#log {
+  background: #101a2c;
+  height: 160px;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<!-- SCHERMATA PRINCIPALE -->
+<div id="menu" class="screen active">
+  <h1>USA POWER & POLICY</h1>
+
+  <div class="card">
+    <button onclick="showScreen('create')">NUOVA PARTITA</button>
+    <button onclick="loadGame()">CARICA PARTITA</button>
+  </div>
+</div>
+
+<!-- CREAZIONE PERSONAGGIO -->
+<div id="create" class="screen">
+  <h2>Crea il tuo personaggio</h2>
+
+  <div class="card">
+    <label>Nome</label>
+    <input id="playerName" placeholder="Inserisci il tuo nome">
+
+    <label>Ruolo</label>
+    <select id="playerRole">
+      <option value="Presidente">Presidente</option>
+      <option value="Senatore">Senatore</option>
+    </select>
+
+    <label>Partito</label>
+    <select id="playerParty">
+      <option value="Democratico">Democratico</option>
+      <option value="Repubblicano">Repubblicano</option>
+      <option value="Indipendente">Indipendente</option>
+    </select>
+
+    <button onclick="startNewGame()">INIZIA</button>
+  </div>
+</div>
+
+<!-- GIOCO -->
+<div id="game" class="screen">
+  <h2>Dashboard</h2>
+
+  <div class="card">
+    <b>Personaggio:</b> <span id="pName"></span><br>
+    <b>Ruolo:</b> <span id="pRole"></span><br>
+    <b>Partito:</b> <span id="pParty"></span><br>
+    <b>Data:</b> <span id="date"></span>
+  </div>
+
+  <div class="card stats">
+    <div class="stat"><b>Approvazione</b><span id="approval"></span></div>
+    <div class="stat"><b>PIL</b><span id="gdp"></span></div>
+    <div class="stat"><b>Inflazione</b><span id="inflation"></span></div>
+    <div class="stat"><b>Disoccupazione</b><span id="unemployment"></span></div>
+    <div class="stat"><b>Debito</b><span id="debt"></span></div>
+    <div class="stat"><b>Velocità</b><span id="speed"></span></div>
+  </div>
+
+  <div class="card">
+    <button onclick="startGame()">START</button>
+    <button onclick="pauseGame()">PAUSA</button>
+    <button onclick="setSpeed(1)">1x</button>
+    <button onclick="setSpeed(2)">2x</button>
+    <button onclick="setSpeed(5)">5x</button>
+    <button onclick="setSpeed(10)">10x</button>
+    <button onclick="saveGame()">SALVA</button>
+    <button onclick="backToMenu()">MENU</button>
+  </div>
+
+  <div class="card">
+    <b>Eventi</b>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+let game = null;
+let timer = null;
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => {
+    s.classList.remove("active");
+  });
+  document.getElementById(id).classList.add("active");
+}
+
+function startNewGame() {
+  const name = document.getElementById("playerName").value || "Giocatore";
+  const role = document.getElementById("playerRole").value;
+  const party = document.getElementById("playerParty").value;
+
+  game = {
+    name: name,
+    role: role,
+    party: party,
+    date: new Date(2024, 0, 1),
+    approval: 40,
+    gdp: 27000,
+    inflation: 3.4,
+    unemployment: 3.7,
+    debt: 34000,
+    speed: 1,
+    running: false,
+    log: []
+  };
+
+  addEvent("Nuova partita iniziata.");
+  updateScreen();
+  showScreen("game");
+}
+
+function loadGame() {
+  const data = localStorage.getItem("usaPowerPolicySave");
+
+  if (!data) {
+    alert("Nessuna partita salvata.");
+    return;
+  }
+
+  game = JSON.parse(data);
+  game.date = new Date(game.date);
+  game.running = false;
+
+  updateScreen();
+  showScreen("game");
+  addEvent("Partita caricata.");
+}
+
+function saveGame() {
+  localStorage.setItem("usaPowerPolicySave", JSON.stringify(game));
+  addEvent("Partita salvata.");
+}
+
+function backToMenu() {
+  pauseGame();
+  showScreen("menu");
+}
+
+function addEvent(text) {
+  if (!game) return;
+  game.log.unshift(text);
+  if (game.log.length > 50) game.log.pop();
+  updateScreen();
+}
+
+function updateScreen() {
+  if (!game) return;
+
+  document.getElementById("pName").innerText = game.name;
+  document.getElementById("pRole").innerText = game.role;
+  document.getElementById("pParty").innerText = game.party;
+  document.getElementById("date").innerText =
+    game.date.toLocaleDateString("it-IT");
+
+  document.getElementById("approval").innerText =
+    game.approval.toFixed(1) + "%";
+
+  document.getElementById("gdp").innerText =
+    game.gdp.toFixed(0) + " mld";
+
+  document.getElementById("inflation").innerText =
+    game.inflation.toFixed(1) + "%";
+
+  document.getElementById("unemployment").innerText =
+    game.unemployment.toFixed(1) + "%";
+
+  document.getElementById("debt").innerText =
+    game.debt.toFixed(0) + " mld";
+
+  document.getElementById("speed").innerText =
+    game.speed + "x";
+
+  document.getElementById("log").innerHTML =
+    game.log.map(e => "<p>" + e + "</p>").join("");
+}
+
+function advanceDay() {
+  game.date.setDate(game.date.getDate() + 1);
+
+  const pressure =
+    (game.inflation - 2) * 0.4 +
+    (game.unemployment - 4) * 0.8 -
+    2.1 * 0.5;
+
+  game.approval -= pressure * 0.05;
+
+  if (game.approval < 15) game.approval = 15;
+  if (game.approval > 75) game.approval = 75;
+
+  game.gdp += game.gdp * (2.1 / 100 / 365);
+  game.debt += 1700 / 365;
+
+  game.inflation += (Math.random() - 0.5) * 0.02;
+  game.unemployment += (Math.random() - 0.5) * 0.03;
+
+  if (game.inflation < 0.5) game.inflation = 0.5;
+  if (game.inflation > 9) game.inflation = 9;
+
+  if (game.unemployment < 2) game.unemployment = 2;
+  if (game.unemployment > 12) game.unemployment = 12;
+
+  if (Math.random() < 0.03) {
+    const events = [
+      "Crisi internazionale in Ucraina.",
+      "Tensioni con la Cina.",
+      "Sciopero nei trasporti.",
+      "Aumento dei prezzi dell'energia.",
+      "Nuovo dibattito al Congresso.",
+      "Disastro naturale in uno Stato.",
+      "Attacco informatico a infrastrutture federali.",
+      "Nuovo sondaggio favorevole al Presidente."
+    ];
+    addEvent(events[Math.floor(Math.random() * events.length)]);
+  }
+
+  updateScreen();
+}
+
+function startGame() {
+  if (!game || game.running) return;
+  game.running = true;
+  timer = setInterval(advanceDay, 1000 / game.speed);
+  addEvent("Simulazione avviata.");
+}
+
+function pauseGame() {
+  if (!game) return;
+  game.running = false;
+  clearInterval(timer);
+  addEvent("Simulazione in pausa.");
+}
+
+function setSpeed(newSpeed) {
+  if (!game) return;
+  game.speed = newSpeed;
+
+  if (game.running) {
+    clearInterval(timer);
+    timer = setInterval(advanceDay, 1000 / game.speed);
+  }
+
+  updateScreen();
+}
+</script>
+
+</body>
+</html>
