@@ -480,6 +480,134 @@ drawMap();
 drawPoliticians();
 drawPixelPortrait(document.getElementById("portrait"));
 drawMenuArt(document.getElementById("menuArt"));
+const politicalStates=[
+["AL","R"],["AK","R"],["AZ","D"],["AR","R"],["CA","D"],
+["CO","D"],["CT","D"],["DE","D"],["FL","R"],["GA","D"],
+["HI","D"],["ID","R"],["IL","D"],["IN","R"],["IA","R"],
+["KS","R"],["KY","R"],["LA","R"],["ME","D"],["MD","D"],
+["MA","D"],["MN","D"],["MI","D"],["MS","R"],["MO","R"],
+["MT","R"],["NE","R"],["NV","D"],["NH","D"],["NJ","D"],
+["NM","D"],["NY","D"],["NC","R"],["ND","R"],["OH","R"],
+["OK","R"],["OR","D"],["PA","D"],["RI","D"],["SC","R"],
+["SD","R"],["TN","R"],["TX","R"],["UT","R"],["VT","D"],
+["VA","D"],["WA","D"],["WV","R"],["WI","D"],["WY","R"],
+["DC","D"]
+];
+
+function drawPoliticalMap(){
+const map=document.getElementById("politicalMap");
+map.innerHTML="";
+politicalStates.forEach(s=>{
+const div=document.createElement("div");
+div.className="state "+(s[1]==="D"?"dem":"rep");
+div.innerText=s[0];
+map.appendChild(div);
+});
+}
+
+function startLegislativeProcess(){
+const steps=[
+"1. Presentazione della legge.",
+"2. Assegnazione alla commissione.",
+"3. Discussione in commissione.",
+"4. Votazione in commissione.",
+"5. Passaggio alla Camera.",
+"6. Votazione alla Camera.",
+"7. Passaggio al Senato.",
+"8. Votazione al Senato.",
+"9. Comitato di conferenza.",
+"10. Firma o veto del Presidente.",
+"11. Eventuale override del Congresso."
+];
+
+const box=document.getElementById("legislativeSteps");
+box.innerHTML="";
+steps.forEach(s=>{
+const p=document.createElement("p");
+p.innerText=s;
+box.appendChild(p);
+});
+
+addEvent("Processo legislativo avviato.");
+}
+
+function drawHouseChamber(){
+const box=document.getElementById("houseChamber");
+box.innerHTML="";
+for(let i=0;i<435;i++){
+const div=document.createElement("div");
+const party=Math.random()>0.5?"D":"R";
+div.className="state "+(party==="D"?"dem":"rep");
+div.innerText=party;
+box.appendChild(div);
+}
+}
+
+function drawSenateChamber(){
+const box=document.getElementById("senateChamber");
+box.innerHTML="";
+for(let i=0;i<100;i++){
+const div=document.createElement("div");
+const party=Math.random()>0.5?"D":"R";
+div.className="state "+(party==="D"?"dem":"rep");
+div.innerText=party;
+box.appendChild(div);
+}
+}
+
+function startElectionProcess(){
+const steps=[
+"1. Primarie.",
+"2. Convenzioni nazionali.",
+"3. Campagna elettorale.",
+"4. Dibattiti presidenziali.",
+"5. Voto popolare.",
+"6. College elettorale.",
+"7. Proclamazione del vincitore."
+];
+
+const box=document.getElementById("electionSteps");
+box.innerHTML="";
+steps.forEach(s=>{
+const p=document.createElement("p");
+p.innerText=s;
+box.appendChild(p);
+});
+
+addEvent("Processo elettorale avviato.");
+}
+
+function detailedElection(){
+let trump=0;
+let harris=0;
+
+politicalStates.forEach(s=>{
+const chance=Math.random();
+if(chance>0.5){
+trump+=Math.floor(Math.random()*20)+5;
+}else{
+harris+=Math.floor(Math.random()*20)+5;
+}
+});
+
+const total=trump+harris;
+const trumpShare=Math.round((trump/total)*538);
+const harrisShare=538-trumpShare;
+
+let result;
+if(trumpShare>=270){
+result="TRUMP VINCE CON "+trumpShare+" GRANDI ELETTORI.";
+}else{
+result="HARRIS VINCE CON "+harrisShare+" GRANDI ELETTORI.";
+}
+
+document.getElementById("electionResult").innerText=result;
+addEvent("Elezioni 2024: "+result);
+}
+
+drawPoliticalMap();
+drawHouseChamber();
+drawSenateChamber();
 </script>
 <div class="card">
 <b>MAPPA POLITICA USA</b>
